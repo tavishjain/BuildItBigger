@@ -9,12 +9,14 @@ import java.util.Objects;
 
 public class JokeActivity extends AppCompatActivity {
 
+    public static final String JOKE_CONSTANT = "joke";
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_joke);
 
-        String joke = Objects.requireNonNull(getIntent().getExtras()).getString("joke");
+        String joke = Objects.requireNonNull(getIntent().getExtras()).getString(JOKE_CONSTANT);
 
         TextView tvJoke = findViewById(R.id.tv_joke);
 

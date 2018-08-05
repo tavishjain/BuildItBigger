@@ -1,23 +1,40 @@
 package com.jain.tavish.builditbigger;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.test.AndroidTestCase;
+
+import java.util.concurrent.ExecutionException;
 
 public class NonNullTest extends AndroidTestCase {
 
     @SuppressWarnings("unchecked")
     public void test() {
 
-        // Testing that Async task successfully retrieves a non-empty string
-        // You can test this from androidTest -> Run 'All Tests'
-        String result;
+        String result = null;
         EndpointsAsyncTask endpointsAsyncTask = new EndpointsAsyncTask(getContext(), null);
         endpointsAsyncTask.execute();
         try {
             result = endpointsAsyncTask.get();
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
+            result = null;
+        } catch (ExecutionException e) {
             result = null;
         }
-        assertNull(result);
-    }
 
+        final String finalResult = result;
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Looper.prepare();
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        assertNotNull(finalResult);
+                    }
+                }, 10000);
+            }
+        }).run();
+    }
 }
