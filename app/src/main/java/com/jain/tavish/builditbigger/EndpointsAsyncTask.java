@@ -8,15 +8,14 @@ import android.view.View;
 
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
-import com.jain.tavish.joke_provider.JokeProvider;
+import com.jain.tavish.builditbigger.backend.jokeApi.JokeApi;
+import com.jain.tavish.builditbigger.backend.jokeApi.model.MyBean;
 import com.jain.tavish.jokescreen.JokeActivity;
-import com.udacity.gradle.builditbigger.backend.jokeApi.JokeApi;
-import com.udacity.gradle.builditbigger.backend.jokeApi.model.MyBean;
 
 import java.io.IOException;
 
 public class EndpointsAsyncTask extends AsyncTask<Pair<Context, String>, Void, String> {
-    private static JokeApi myApiService = null;
+    private static JokeApi mJokeApi  = null;
     private Context context;
     private View progressBar;
 
@@ -26,17 +25,26 @@ public class EndpointsAsyncTask extends AsyncTask<Pair<Context, String>, Void, S
     }
 
     @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        if (progressBar != null) {
+            progressBar.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
     protected String doInBackground(Pair<Context, String>... params) {
-        if (myApiService == null) {
+        if (mJokeApi == null) {
             JokeApi.Builder builder = new JokeApi.Builder(AndroidHttp.newCompatibleTransport(),
                     new AndroidJsonFactory(), null)
                     .setRootUrl("https://cloudenginetest-992.appspot.com/_ah/api/");
 
-            myApiService = builder.build();
+            mJokeApi = builder.build();
         }
 
         try {
-            return myApiService.putJoke(new MyBean()).execute().getData();
+            MyBean myBean = mJokeApi.putJoke().execute();
+            return myBean.getData();
         } catch (IOException e) {
             return e.getMessage();
         }
@@ -44,11 +52,9 @@ public class EndpointsAsyncTask extends AsyncTask<Pair<Context, String>, Void, S
 
     @Override
     protected void onPostExecute(String result) {
-        JokeProvider jokeProvider = new JokeProvider();
-        String joke = jokeProvider.getRandomJoke();
-        progressBar.setVisibility(View.GONE );
+
         Intent intent = new Intent(context, JokeActivity.class);
-        intent.putExtra("joke", joke);
+        intent.putExtra("joke", result);
         context.startActivity(intent);
     }
 }
